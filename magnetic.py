@@ -9,12 +9,28 @@ This code is provided for academic and research purposes only. Any use of this c
 
 Computes the magnetic evolution of a planet based on a thermal evolution obtained from thermal.py.
 
+Returns .pkl files describing the entropy budget and magnetic field evolution of the planet. The entropy budget files contain a class with the entropy budget terms (e.g. secular cooling, radiogenic heating, latent heat, etc.). The magnetic field files contain a class with magnetic quantities (e.g. magnetic Reynolds number, magnetic field intensities, etc.).
+
+The output files are:
+- entropy_nominal.pkl: Entropy budget evolution using a fixed BMO electrical conductivity and a fixed core thermal conductivity.
+- entropy_S2020.pkl: Entropy budget evolution using a time-varying BMO electrical conductivity (Stixrude et al., 2020) and a fixed core thermal conductivity.
+- entropy_sigma_BMO_Lo.pkl: Entropy budget evolution, sweeping a fixed BMO electrical conductivity, and using a fixed core thermal conductivity.
+- entropy_sigma_BMO_Lo_S2020.pkl: Entropy budget evolution, sweeping a time-varying BMO electrical conductivity (Stixrude et al., 2020), and using a fixed core thermal conductivity.
+- entropy_k_core_Lo.pkl: Entropy budget evolution, sweeping a fixed core thermal conductivity, and using a fixed BMO electrical conductivity.
+- entropy_k_core_Lo_S2020.pkl: Entropy budget evolution, sweeping a fixed core thermal conductivity, and using a time-varying BMO electrical conductivity (Stixrude et al., 2020).
+- magnetic_nominal.pkl: Magnetic evolution using a fixed BMO electrical conductivity and a fixed core thermal conductivity.
+- magnetic_S2020.pkl: Magnetic evolution using a time-varying BMO electrical conductivity (Stixrude et al., 2020) and a fixed core thermal conductivity.
+- magnetic_sigma_BMO_Lo.pkl: Magnetic evolution, sweeping a fixed BMO electrical conductivity, and using a fixed core thermal conductivity.
+- magnetic_sigma_BMO_Lo_S2020.pkl: Magnetic evolution, sweeping a time-varying BMO electrical conductivity (Stixrude et al., 2020), and using a fixed core thermal conductivity.
+- magnetic_k_core_Lo.pkl: Magnetic evolution, sweeping a fixed core thermal conductivity, and using a fixed BMO electrical conductivity.
+- magnetic_k_core_Lo_S2020.pkl: Magnetic evolution, sweeping a fixed core thermal conductivity, and using a time-varying BMO electrical conductivity (Stixrude et al., 2020).
+
 Created by Victor Lherm on 2025-05-07 10:00:00.
 """
 
 # %% Modules
 # =============================================================================
-import os, glob, time, re
+import os, glob, time
 import numpy as np
 import dill as pkl
 import importlib as imp
@@ -28,7 +44,7 @@ from mpi4py import MPI
 
 # %% Paths
 # =============================================================================
-dirs = sorted(glob.glob("path_to_models/*", recursive=False))
+dirs = sorted(glob.glob("Demo", recursive=False))
 
 # %% Output
 # =============================================================================
@@ -142,7 +158,7 @@ def dynamo_sw(path):
 
     # Import functions
     os.chdir(simu_path)
-    ld = imp.machinery.SourceFileLoader("functions", simu_path + "/functions.py")
+    ld = imp.machinery.SourceFileLoader("functions", simu_path + "/../functions.py")
     ld.load_module("functions")
     from functions import (
         N,
@@ -245,7 +261,7 @@ def dynamo_sw(path):
     
     # Dynamo scaling laws
     # =============================================================================
-    data = np.loadtxt("data_A_2009.dat", delimiter="\t")
+    data = np.loadtxt("Data/data_A_2009.dat", delimiter="\t")
     (
         Ro_A2009,
         Lo_A2009,
@@ -255,7 +271,7 @@ def dynamo_sw(path):
         f_i_A2009,
     ) = [data[:, i] for i in range(6)]
 
-    data = np.loadtxt("data_C_2006.dat", delimiter="\t")
+    data = np.loadtxt("Data/data_C_2006.dat", delimiter="\t")
     (
         Ra_star_C2006,
         Nu_C2006,
@@ -301,7 +317,7 @@ def dynamo_sw(path):
     for i, alpha in enumerate(alpha_Ro):
         fun = lambda x: x + np.log(p_fit) * alpha - np.log(Ro_fit)
         lsq = optimize.least_squares(fun, np.log(c_U_BMO))
-        c_U_BMO_fit[i] = np.exp(lsq.x)
+        c_U_BMO_fit[i] = np.exp(lsq.x[0])
 
     mask = (Lo_A2009 > 0) & (f_dip_A2009 > 0.35)
     x_1 = p_A2009[mask]
@@ -318,7 +334,7 @@ def dynamo_sw(path):
     for i, alpha in enumerate(alpha_Lo):
         fun = lambda x: x + np.log(p_fit) * alpha - np.log(Lo_fit)
         lsq = optimize.least_squares(fun, np.log(c_B_BMO))
-        c_B_BMO_fit[i] = np.exp(lsq.x)
+        c_B_BMO_fit[i] = np.exp(lsq.x[0])
 
     # Core
     mask = (Lo_A2009 > 0) & (f_dip_A2009 > 0.35)
@@ -334,7 +350,7 @@ def dynamo_sw(path):
     for i, alpha in enumerate(alpha_Ro):
         fun = lambda x: x + np.log(p_fit) * alpha - np.log(Ro_fit)
         lsq = optimize.least_squares(fun, np.log(c_U_core))
-        c_U_core_fit[i] = np.exp(lsq.x)
+        c_U_core_fit[i] = np.exp(lsq.x[0])
 
     mask = (Lo_A2009 > 0) & (f_dip_A2009 > 0.35)
     x_1 = p_A2009[mask]
@@ -351,7 +367,7 @@ def dynamo_sw(path):
     for i, alpha in enumerate(alpha_Lo):
         fun = lambda x: x + np.log(p_fit) * alpha - np.log(Lo_fit)
         lsq = optimize.least_squares(fun, np.log(c_B_core))
-        c_B_core_fit[i] = np.exp(lsq.x)
+        c_B_core_fit[i] = np.exp(lsq.x[0])
 
     # Entropy budget
     # =============================================================================
@@ -963,8 +979,6 @@ def dynamo_sw(path):
                 self.BS_fit_BMO = BS_fit_BMO
                 self.BS_fit_BMO_cst = BS_fit_BMO_cst
 
-                self.Q_conv_BMO = Q_conv_BMO
-
                 self.k_BMO = k_BMO
                 self.sigma_BMO = sigma_BMO
 
@@ -984,8 +998,6 @@ def dynamo_sw(path):
                 self.B_fit_core = B_fit_core
                 self.BS_fit_core = BS_fit_core
                 self.BS_fit_core_cst = BS_fit_core_cst
-
-                self.Q_conv_core = Q_conv_core
 
                 self.k_core = k_core
                 self.sigma_core = sigma_core
@@ -1263,17 +1275,15 @@ def dynamo_sw(path):
 
     (
         E_phi_BMO,
-        Q_conv_BMO,
         Rm_S_BMO,
         B_S_BMO,
         BS_S_BMO,
         BS_S_BMO_cst,
         k_BMO_sw_Lo,
         sigma_BMO_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_BMO[i] = E[i].E_phi_BMO
-        Q_conv_BMO[i] = M[i].Q_conv_BMO
         Rm_S_BMO[i] = M[i].Rm_S_BMO
         B_S_BMO[i] = M[i].B_S_BMO
         BS_S_BMO[i] = M[i].BS_S_BMO
@@ -1287,17 +1297,15 @@ def dynamo_sw(path):
 
     (
         E_phi_core,
-        Q_conv_core,
         Rm_S_core,
         B_S_core,
         BS_S_core,
         BS_S_core_cst,
         k_core_sw_Lo,
         sigma_core_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_core[i] = E[i].E_phi_core
-        Q_conv_core[i] = M[i].Q_conv_core
         Rm_S_core[i] = M[i].Rm_S_core
         B_S_core[i] = M[i].B_S_core
         BS_S_core[i] = M[i].BS_S_core
@@ -1313,17 +1321,15 @@ def dynamo_sw(path):
 
     (
         E_phi_BMO,
-        Q_conv_BMO,
         Rm_S_BMO,
         B_S_BMO,
         BS_S_BMO,
         BS_S_BMO_cst,
         k_BMO_sw_Lo,
         sigma_BMO_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_BMO[i] = E[i].E_phi_BMO
-        Q_conv_BMO[i] = M[i].Q_conv_BMO
         Rm_S_BMO[i] = M[i].Rm_S_BMO
         B_S_BMO[i] = M[i].B_S_BMO
         BS_S_BMO[i] = M[i].BS_S_BMO
@@ -1337,17 +1343,15 @@ def dynamo_sw(path):
 
     (
         E_phi_core,
-        Q_conv_core,
         Rm_S_core,
         B_S_core,
         BS_S_core,
         BS_S_core_cst,
         k_core_sw_Lo,
         sigma_core_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_core[i] = E[i].E_phi_core
-        Q_conv_core[i] = M[i].Q_conv_core
         Rm_S_core[i] = M[i].Rm_S_core
         B_S_core[i] = M[i].B_S_core
         BS_S_core[i] = M[i].BS_S_core
@@ -1365,17 +1369,15 @@ def dynamo_sw(path):
 
     (
         E_phi_BMO,
-        Q_conv_BMO,
         Rm_S_BMO,
         B_S_BMO,
         BS_S_BMO,
         BS_S_BMO_cst,
         k_BMO_sw_Lo,
         sigma_BMO_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_BMO[i] = E[i].E_phi_BMO
-        Q_conv_BMO[i] = M[i].Q_conv_BMO
         Rm_S_BMO[i] = M[i].Rm_S_BMO
         B_S_BMO[i] = M[i].B_S_BMO
         BS_S_BMO[i] = M[i].BS_S_BMO
@@ -1389,17 +1391,15 @@ def dynamo_sw(path):
 
     (
         E_phi_core,
-        Q_conv_core,
         Rm_S_core,
         B_S_core,
         BS_S_core,
         BS_S_core_cst,
         k_core_sw_Lo,
         sigma_core_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_core[i] = E[i].E_phi_core
-        Q_conv_core[i] = M[i].Q_conv_core
         Rm_S_core[i] = M[i].Rm_S_core
         B_S_core[i] = M[i].B_S_core
         BS_S_core[i] = M[i].BS_S_core
@@ -1415,17 +1415,15 @@ def dynamo_sw(path):
 
     (
         E_phi_BMO,
-        Q_conv_BMO,
         Rm_S_BMO,
         B_S_BMO,
         BS_S_BMO,
         BS_S_BMO_cst,
         k_BMO_sw_Lo,
         sigma_BMO_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_BMO[i] = E[i].E_phi_BMO
-        Q_conv_BMO[i] = M[i].Q_conv_BMO
         Rm_S_BMO[i] = M[i].Rm_S_BMO
         B_S_BMO[i] = M[i].B_S_BMO
         BS_S_BMO[i] = M[i].BS_S_BMO
@@ -1439,17 +1437,15 @@ def dynamo_sw(path):
 
     (
         E_phi_core,
-        Q_conv_core,
         Rm_S_core,
         B_S_core,
         BS_S_core,
         BS_S_core_cst,
         k_core_sw_Lo,
         sigma_core_sw_Lo,
-    ) = (np.zeros((len(M), len(Q.t))) for i in range(12))
+    ) = (np.zeros((len(M), len(Q.t))) for i in range(7))
     for i in range(len(M)):
         E_phi_core[i] = E[i].E_phi_core
-        Q_conv_core[i] = M[i].Q_conv_core
         Rm_S_core[i] = M[i].Rm_S_core
         B_S_core[i] = M[i].B_S_core
         BS_S_core[i] = M[i].BS_S_core

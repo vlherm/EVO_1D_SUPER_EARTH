@@ -9,6 +9,8 @@ This code is provided for academic and research purposes only. Any use of this c
 
 Computes the buoyancy evolution of a planet based on a thermal evolution obtained from thermal.py.
 
+Returns a .pkl file (buoyancy.pkl) containing a class with attributes describing the local convective stability evolution of the planet (mass anomaly fluxes).
+
 Created by Victor Lherm on 2025-05-07 10:00:00.
 """
 
@@ -28,7 +30,7 @@ from mpi4py import MPI
 
 # %% Paths
 # =============================================================================
-dirs = sorted(glob.glob("path_to_models/*", recursive=False))
+dirs = sorted(glob.glob("Demo", recursive=False))
 
 # %% Parameters
 # =============================================================================
@@ -89,7 +91,7 @@ def buoyancy(path):
 
         # Import functions
         os.chdir(simu_path)
-        ld = imp.machinery.SourceFileLoader("functions", simu_path + "/functions.py")
+        ld = imp.machinery.SourceFileLoader("functions", simu_path + "/../functions.py")
         ld.load_module("functions")
         from functions import (
             N,

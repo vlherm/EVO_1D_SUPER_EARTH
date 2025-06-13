@@ -7,7 +7,9 @@ All rights reserved.
 
 This code is provided for academic and research purposes only. Any use of this code in published work or presentations must include a citation to the original author. Unauthorized copying, modification, or distribution of this code is prohibited without prior written permission from the author.
 
-Computes the thermal evolution of a planet using pre-computed internal structures from structure.py.
+Computes the thermal evolution of a planet using pre-computed internal structures (T_CMB_XXXXX.pkl files) from structure.py.
+
+Returns a .pkl file (thermal.pkl) containing a class with attributes describing the thermal evolution of the planet (e.g. temperatures, heat flows, etc.).
 
 Created by Victor Lherm on 2025-05-07 10:00:00.
 """
@@ -39,9 +41,9 @@ sol_BMO = integrate.solve_ivp(
     t_eval=t_eval,
     dense_output=True,
     method="RK45",
-    rtol=1e-6,
+    rtol=1e-3,
     atol=1e-6,
-    max_step=y2s(1e6),
+    max_step=y2s(1e7),
     args=(SE0, Xi_BMO_initial),
 )
 

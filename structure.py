@@ -9,7 +9,9 @@ This code is provided for academic and research purposes only. Any use of this c
 
 Computes the internal structure of a planet with a given mass and core mass fraction, at multiple thermal states.
 
-Created by Victor Lherm on 2024-05-07 10:00:00.
+Returns a .pkl file for each CMB temperature (T_CMB_XXXXX.pkl) within the computed range. Each file contains a class with attributes describing the internal structure (e.g. density, pressure, temperature, and other thermodynamic properties) as a function of radius.
+
+Created by Victor Lherm on 2025-05-07 10:00:00.
 """
 
 # %% Modules
@@ -26,10 +28,10 @@ from mpi4py import MPI
 # %% General parameters
 # =============================================================================
 # Folder parameters
-output_dir = "Output"  # Folder name for the output
+output_dir = "Demo/Output"  # Folder name for the output
 
 # Temperature (CMB) search range
-T_CMB_search = np.arange(3000, 8000, 1)  # CMB temperature search range [K]
+T_CMB_search = np.arange(4000, 6000, 1)  # CMB temperature search range [K]
 
 # Numerical parameters
 N = 1024  # Number of grid points
@@ -763,8 +765,7 @@ def structure_SE(T_CMB):
 
 
 # Saving directory
-if not os.path.isdir(output_dir):
-    os.mkdir(output_dir)
+os.makedirs(output_dir, exist_ok=True)
 
 if __name__ == "__main__":
     tic = time.time()

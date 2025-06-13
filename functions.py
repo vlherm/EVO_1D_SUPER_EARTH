@@ -14,7 +14,7 @@ Created by Victor Lherm on 2025-05-07 10:00:00.
 
 # %% Modules
 # =============================================================================
-import os, glob
+import glob
 import numpy as np
 import dill as pkl
 
@@ -49,7 +49,7 @@ def mol2wt(x1, M1, M2):
 # %% General parameters
 # =============================================================================
 # Paths
-energy_path = os.getcwd()
+energy_path = "Demo"  # Simulation path
 structure_path = energy_path
 
 # Flags
