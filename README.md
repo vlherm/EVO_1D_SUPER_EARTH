@@ -35,7 +35,7 @@ The code has been tested on a local machine with 24 CPUs and 64 GB of RAM, and o
 
 The code requires Python 3 with publicly available packages. Parallel computing is implemented using the `mpi4py` package and OpenMPI.
 
-The code has been tested on a local machine on Linux Ubuntu 22.04 with Python 3.10.12 and OpenMPI 4.1.2, and on a cluster with Python 3.10.12 and OpenMPI 4.0.4. 
+The code has been tested on a local machine on Linux Ubuntu 22.04 with Python 3.10.12 and OpenMPI 4.1.2, and on a cluster with Python 3.10.8 and OpenMPI 4.0.4. 
 
 ## Installation
 

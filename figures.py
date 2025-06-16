@@ -16,7 +16,6 @@ Created by Victor Lherm on 2025-05-07 10:00:00.
 
 # %% Modules
 # =============================================================================
-import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -4731,9 +4730,10 @@ for m in range(len(m_p)):
 
     i = 0
     p = ax[i, m].pcolormesh(
-        s2y(SW_M[n].B[m_p[m]].t) / 1e9,
-        np.linspace(0, 1, np.size(SW_M[n].B[m_p[m]].dC0dr_TOT_BMO_S2020, 1)),
-        SW_M[n].B[m_p[m]].dC0dr_TOT_BMO_S2020.T * np.where(mask_BMO_M[n][m_p[m]], 1, np.nan),
+        s2y(SW_M[n].t[m_p[m]]) / 1e9,
+        np.linspace(0, 1, np.size(SW_M[n].dC0dr_TOT_BMO_S2020[m_p[m]], 1)),
+        SW_M[n].dC0dr_TOT_BMO_S2020[m_p[m]].T
+        * np.where(mask_BMO_M[n][m_p[m]], 1, np.nan),
         cmap="BrBG_r",
         shading="auto",
         norm=mpl.colors.SymLogNorm(
@@ -4758,9 +4758,9 @@ for m in range(len(m_p)):
 
     i = 1
     p = ax[i, m].pcolormesh(
-        s2y(SW_M[n].B[m_p[m]].t) / 1e9,
-        np.linspace(0, 1, np.size(SW_M[n].B[m_p[m]].dC0dr_TOT_core, 1)),
-        SW_M[n].B[m_p[m]].dC0dr_TOT_core.T * mask_OC,
+        s2y(SW_M[n].t[m_p[m]]) / 1e9,
+        np.linspace(0, 1, np.size(SW_M[n].dC0dr_TOT_core[m_p[m]], 1)),
+        SW_M[n].dC0dr_TOT_core[m_p[m]].T * mask_OC,
         cmap="BrBG_r",
         shading="auto",
         norm=mpl.colors.SymLogNorm(
@@ -4771,9 +4771,9 @@ for m in range(len(m_p)):
         rasterized=True,
     )
     ax[i, m].contour(
-        s2y(SW_M[n].B[m_p[m]].t) / 1e9,
-        np.linspace(0, 1, np.size(SW_M[n].B[m_p[m]].dC0dr_TOT_core, 1))[1:],
-        SW_M[n].B[m_p[m]].dC0dr_TOT_core.T[1:, :],
+        s2y(SW_M[n].t[m_p[m]]) / 1e9,
+        np.linspace(0, 1, np.size(SW_M[n].dC0dr_TOT_core[m_p[m]], 1))[1:],
+        SW_M[n].dC0dr_TOT_core[m_p[m]].T[1:, :],
         levels=[0],
         colors="lime",
         linestyles="dashed",
